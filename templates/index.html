@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Export Data Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #tableNameInput {
+            margin-top: 20px;
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #updatedByDisplay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Export Data Viewer</h1>
+    <label for="tableNameInput">Table Name:</label>
+    <input type="text" id="tableNameInput" placeholder="Enter table name">
+    <button id="loadDataButton">Load Data</button>
+    <div id="updatedByDisplay"></div>
+    <br>
+    <table id="dataTable">
+        <thead>
+            <tr id="tableHeader"></tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById('loadDataButton').addEventListener('click', function() {
+            const tableName = document.getElementById('tableNameInput').value;
+            if (!tableName) {
+                alert('Please enter a table name');
+                return;
+            }
+
+            const url = `/api/export?name=${encodeURIComponent(tableName)}`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const updatedByDisplay = document.getElementById('updatedByDisplay');
+                    const tableHeader = document.getElementById('tableHeader');
+                    const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+
+                    updatedByDisplay.textContent = '';
+                    tableHeader.innerHTML = '';
+                    tableBody.innerHTML = '';
+
+                    if (data.records && data.records.length > 0) {
+                        const headers = Object.keys(data.records[0]);
+                        headers.forEach(header => {
+                            let th = document.createElement('th');
+                            th.textContent = header;
+                            tableHeader.appendChild(th);
+                        });
+                        data.records.forEach(row => {
+                            let tr = document.createElement('tr');
+                            headers.forEach(header => {
+                                let td = document.createElement('td');
+                                td.textContent = row[header];
+                                tr.appendChild(td);
+                            });
+                            tableBody.appendChild(tr);
+                        });
+                        updatedByDisplay.textContent = `Updated By: ${data.updatedBy}`;
+                    } else {
+                        let tr = document.createElement('tr');
+                        let td = document.createElement('td');
+                        td.textContent = 'No data available';
+                        td.colSpan = headers.length;
+                        tr.appendChild(td);
+                        tableBody.appendChild(tr);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading data:', error);
+                    alert('Failed to load data');
+                });
+        });
+    </script>
+</body>
+</html>
