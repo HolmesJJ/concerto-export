@@ -1,0 +1,21 @@
+.DS_Store
+*.pth
+*.pyc
+*.pyo
+*.log
+*.tmp
+.idea/
+.ipynb_checkpoints
+.pytest_cache
+__pycache__/
+cache/
+
+# data
+build
+vendor
+gpt/code
+gpt/cpp_code
+repo/gpt_code
+repo/gpt_cpp_code
+repo/copilot_code
+moss-01032024
